@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ba0d9245-201d-4516-bd22-0ba3aa64a55b",
+    "startTime": 20.5,
+    "endTime": 80.5,
+    "title": "Clip 1",
+    "duration": 60,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "b8e80266-e314-4b8d-81d1-fdd0f7505c6b",
+    "startTime": 101,
+    "endTime": 106,
+    "title": "Clip 2",
+    "duration": 5,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "0822391e-f8f4-4781-a64c-553922e8c96b",
+    "startTime": 106,
+    "endTime": 111,
+    "title": "Clip 3",
+    "duration": 5,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "beda2184-e286-45da-b2ed-fa6fb9bb6810",
+    "startTime": 111,
+    "endTime": 132,
+    "title": "Clip 4",
+    "duration": 21,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "196bb5bd-dc52-4db9-9bd3-43d065243dfd",
+    "startTime": 132,
+    "endTime": 153,
+    "title": "Clip 5",
+    "duration": 21,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "37a4ba78-2425-47eb-8a87-bccb1199f349",
+    "startTime": 153,
+    "endTime": 159,
+    "title": "Clip 6",
+    "duration": 6,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "6144ef50-19e9-40cb-8614-058309018306",
+    "startTime": 159,
+    "endTime": 172,
+    "title": "Clip 7",
+    "duration": 13,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "4c20d7e7-128b-4682-9be1-a156fb27d674",
+    "startTime": 172,
+    "endTime": 181,
+    "title": "Clip 8",
+    "duration": 9,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "6b0032ba-898c-4ccd-a3ce-af91f95de2a8",
+    "startTime": 181,
+    "endTime": 193,
+    "title": "Clip 9",
+    "duration": 12,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  },
+  {
+    "id": "68204c22-3a3c-4234-b197-780b1b55dc1d",
+    "startTime": 300.5,
+    "endTime": 360.5,
+    "title": "Clip 10",
+    "duration": 60,
+    "videoUrl": "/api/video/yt-1788273088132.mp4",
+    "thumbnail": ""
+  }
+]

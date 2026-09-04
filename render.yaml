@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: clipper
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: bash start.sh
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
