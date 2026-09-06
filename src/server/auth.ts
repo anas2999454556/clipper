@@ -12,8 +12,6 @@ function getJwtSecret(): string {
   return secret;
 }
 
-const JWT_SECRET = getJwtSecret();
-
 const COOKIE_NAME = "clipper_token";
 const TOKEN_EXPIRY = "7d";
 
@@ -31,12 +29,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export function signToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: TOKEN_EXPIRY });
 }
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as unknown;
+    const payload = jwt.verify(token, getJwtSecret()) as unknown;
     if (
       typeof payload === "object" &&
       payload !== null &&
