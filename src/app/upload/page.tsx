@@ -2,7 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, Clock, FileVideo, Link, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Upload, X, Clock, FileVideo, Link as LinkIcon, ArrowRight } from "lucide-react";
 import { getVideoDuration, formatDuration, formatFileSize } from "@/lib/video-utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -195,9 +196,12 @@ export default function UploadPage() {
           <p className="text-xs text-center mb-8">
             <span className="text-muted-foreground">
               {user.usageCount}/{user.usageLimit === -1 ? "∞" : user.usageLimit} analyses used
+              {user.plan === "premium" ? " this month" : ""}
             </span>
-            {user.plan === "free" && user.usageCount >= user.usageLimit && (
-              <span className="ml-2" style={{ color: "#dc2626" }}>Limit reached</span>
+            {user.plan !== "super_premium" && user.usageCount >= user.usageLimit && (
+              <Link href="/pricing" className="ml-2" style={{ color: "#dc2626" }}>
+                Limit reached. Upgrade
+              </Link>
             )}
           </p>
         )}
@@ -217,7 +221,7 @@ export default function UploadPage() {
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
             style={tab === "url" ? { background: "#ffffff", color: "#000000" } : { color: "#888" }}
           >
-            <Link className="w-3.5 h-3.5" />
+            <LinkIcon className="w-3.5 h-3.5" />
             URL
           </button>
         </div>

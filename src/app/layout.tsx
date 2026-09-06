@@ -31,6 +31,9 @@ export default function RootLayout({
               <Link href="/upload" className="hover:text-foreground transition-colors">
                 Upload
               </Link>
+              <Link href="/pricing" className="hover:text-foreground transition-colors">
+                Pricing
+              </Link>
             </nav>
 
             <AuthNav />

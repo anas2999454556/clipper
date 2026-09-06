@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import type { User } from "@/lib/types";
+import { PLAN_NAMES } from "@/lib/plans";
 
 export default function AuthNav() {
   const [user, setUser] = useState<User | null>(null);
@@ -40,14 +41,27 @@ export default function AuthNav() {
   if (loading) return null;
 
   if (user) {
+    const planName = PLAN_NAMES[user.plan] ?? user.plan;
     return (
       <div className="flex items-center gap-4">
         <span className="text-sm text-muted-foreground hidden md:inline">
           {user.usageCount}/{user.usageLimit === -1 ? "∞" : user.usageLimit} used
         </span>
-        <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-          {user.plan}
+        <span
+          className="text-xs font-medium px-2 py-0.5 rounded-full border border-border text-muted-foreground"
+          title={user.subscriptionStatus === "active" ? "Subscription active" : undefined}
+        >
+          {planName}
         </span>
+        {user.plan === "free" && (
+          <Link
+            href="/pricing"
+            className="text-xs font-medium rounded-full px-3 py-1.5 transition-colors"
+            style={{ background: "#ffffff", color: "#000000" }}
+          >
+            Upgrade
+          </Link>
+        )}
         <button
           onClick={handleLogout}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"

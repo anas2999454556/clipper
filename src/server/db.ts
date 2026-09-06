@@ -25,6 +25,10 @@ function getDb(): Database.Database {
       plan TEXT NOT NULL DEFAULT 'free',
       usage_count INTEGER NOT NULL DEFAULT 0,
       usage_limit INTEGER NOT NULL DEFAULT 5,
+      stripe_customer_id TEXT,
+      stripe_subscription_id TEXT,
+      subscription_status TEXT NOT NULL DEFAULT 'none',
+      usage_reset_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -57,7 +61,26 @@ function getDb(): Database.Database {
     );
   `);
 
+  migrateUserColumns(_db);
+
   return _db;
+}
+
+const USER_COLUMN_MIGRATIONS: Record<string, string> = {
+  stripe_customer_id: "TEXT",
+  stripe_subscription_id: "TEXT",
+  subscription_status: "TEXT NOT NULL DEFAULT 'none'",
+  usage_reset_at: "TEXT",
+};
+
+function migrateUserColumns(database: Database.Database) {
+  const columns = database.prepare("PRAGMA table_info(users)").all() as { name: string }[];
+  const existing = new Set(columns.map((c) => c.name));
+  for (const [name, definition] of Object.entries(USER_COLUMN_MIGRATIONS)) {
+    if (!existing.has(name)) {
+      database.exec(`ALTER TABLE users ADD COLUMN ${name} ${definition}`);
+    }
+  }
 }
 
 const db = new Proxy({} as Database.Database, {
@@ -81,6 +104,10 @@ export interface DBUser {
   plan: string;
   usage_count: number;
   usage_limit: number;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_status: string;
+  usage_reset_at: string | null;
   created_at: string;
   updated_at: string;
 }

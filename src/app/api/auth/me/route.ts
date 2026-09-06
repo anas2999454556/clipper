@@ -21,6 +21,7 @@ export async function GET() {
         email: user.email,
         name: user.name,
         plan: user.plan,
+        subscriptionStatus: user.subscription_status,
         usageCount: user.usage_count,
         usageLimit: user.usage_limit,
       },

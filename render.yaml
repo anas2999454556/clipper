@@ -11,3 +11,13 @@ services:
         value: production
       - key: JWT_SECRET
         sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_PREMIUM
+        sync: false
+      - key: STRIPE_PRICE_SUPER_PREMIUM
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false

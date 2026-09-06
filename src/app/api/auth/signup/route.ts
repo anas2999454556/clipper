@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: { id, email: normalizedEmail, name: name || null, plan: "free", usageCount: 0, usageLimit: 5 },
+      user: { id, email: normalizedEmail, name: name || null, plan: "free", subscriptionStatus: "none", usageCount: 0, usageLimit: 5 },
     });
   } catch (error) {
     console.error("Signup error:", error);

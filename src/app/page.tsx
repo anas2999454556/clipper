@@ -76,7 +76,12 @@ export default function HomePage() {
       <footer className="border-t border-border py-8 px-6 md:px-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-muted-foreground">
           <span>Clipper</span>
-          <span>&copy; 2026</span>
+          <div className="flex items-center gap-6">
+            <Link href="/pricing" className="hover:text-foreground transition-colors">
+              Pricing
+            </Link>
+            <span>&copy; 2026</span>
+          </div>
         </div>
       </footer>
     </main>

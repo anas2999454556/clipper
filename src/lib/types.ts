@@ -1,8 +1,11 @@
+import type { PlanId } from "./plans";
+
 export interface User {
   id: string;
   email: string;
   name: string | null;
-  plan: "free" | "pro";
+  plan: PlanId;
+  subscriptionStatus: string | null;
   usageCount: number;
   usageLimit: number;
 }
