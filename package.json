@@ -15,6 +15,7 @@
   "dependencies": {
     "@prisma/client": "^7.10.0",
     "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
     "lucide-react": "^1.38.0",
     "next": "16.3.3",
     "prisma": "^8.0.0-rc.12",
@@ -24,10 +25,9 @@
     "uuid": "^14.0.2"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.0",
-    "@cloudflare/workers-types": "^4.20240925.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -35,7 +35,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "wrangler": "^3.0.0"
+    "typescript": "^5"
   }
 }
