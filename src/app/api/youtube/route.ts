@@ -17,8 +17,8 @@ function isYouTubeUrl(url: string): boolean {
 
 async function runYtDlp(args: string[]): Promise<string> {
   const { stdout } = await execFileAsync("python", ["-m", "yt_dlp", "--js-runtimes", "node", ...args], {
-    timeout: 300000,
-    maxBuffer: 50 * 1024 * 1024,
+    timeout: 600000,
+    maxBuffer: 100 * 1024 * 1024,
   });
   return stdout;
 }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     const outTemplate = path.join(DATA_DIR, `${baseName}.%(ext)s`);
     await runYtDlp([
-      "-f", "bestvideo[ext=mp4][height<=720]/bestvideo[height<=720]/best",
+      "-f", "best[ext=mp4]/best",
       "-o", outTemplate,
       "--no-playlist",
       url,
