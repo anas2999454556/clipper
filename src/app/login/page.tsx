@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import GoogleButton from "@/components/GoogleButton";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -45,10 +46,11 @@ export default function LoginPage() {
           Welcome back to Clipper
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
-            <label className="block text-sm font-medium mb-1.5">Email</label>
+            <label htmlFor="login-email" className="block text-sm font-medium mb-1.5">Email</label>
             <input
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -59,8 +61,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5">Password</label>
+            <label htmlFor="login-password" className="block text-sm font-medium mb-1.5">Password</label>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -71,7 +74,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-sm" style={{ color: "#dc2626" }}>{error}</p>
+            <p className="text-sm" role="alert" style={{ color: "#dc2626" }}>{error}</p>
           )}
 
           <button
@@ -83,6 +86,14 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
+
+        <div className="flex items-center gap-3 my-6">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <GoogleButton />
 
         <p className="text-sm text-muted-foreground text-center mt-6">
           Don&apos;t have an account?{" "}

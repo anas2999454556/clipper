@@ -6,7 +6,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative pt-12 pb-16 px-6 md:px-10 text-center">
         <p className="text-sm text-muted-foreground mb-5">
-          Trusted by 2 million+ content creators
+          Turn long videos into viral clips
         </p>
 
         <h1 className="text-display max-w-3xl mx-auto mb-5">
@@ -28,8 +28,23 @@ export default function HomePage() {
           </Link>
         </div>
 
+        {/* Platform logos */}
+        <div className="flex items-center justify-center gap-6 mt-6 text-muted-foreground" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" />
+            <circle cx="12" cy="12" r="5" />
+            <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+          </svg>
+          <svg width="24" height="18" viewBox="0 0 24 18" fill="currentColor">
+            <path d="M23.5 2.3a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.2A3 3 0 0 0 .5 2.3 31.4 31.4 0 0 0 0 9a31.4 31.4 0 0 0 .5 6.7 3 3 0 0 0 2.1 2.1c1.9.2 9.4.2 9.4.2s7.5 0 9.4-.2a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 9a31.4 31.4 0 0 0-.5-6.7ZM9.5 12.7V5.3l6.5 3.7-6.5 3.7Z" />
+          </svg>
+          <svg width="17" height="19" viewBox="0 0 14 16" fill="currentColor">
+            <path d="M10.3.2v9.5c0 2.4-1.9 4.3-4.3 4.3-1.2 0-2.3-.5-3.1-1.3L4 11c.5.5 1.2.8 2 .8 1.8 0 3.2-1.4 3.2-3.2V5.8c.8.6 1.7.9 2.7.9V4c-2.1 0-3-1-3-1V.2h1.4Z" />
+          </svg>
+        </div>
+
         {/* Phone mockups */}
-        <div className="relative mt-14 mx-auto max-w-4xl" style={{ height: "340px" }}>
+        <div className="relative mt-14 mx-auto max-w-4xl" style={{ height: "340px" }} aria-hidden="true">
           {/* Left phone */}
           <div className="absolute left-[8%] md:left-[12%] bottom-0 hidden sm:block" style={{ transform: "rotate(-8deg)" }}>
             <PhoneFrame label="Comedy highlight" />
@@ -71,19 +86,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-6 md:px-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-muted-foreground">
-          <span>Clipper</span>
-          <div className="flex items-center gap-6">
-            <Link href="/pricing" className="hover:text-foreground transition-colors">
-              Pricing
-            </Link>
-            <span>&copy; 2026</span>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

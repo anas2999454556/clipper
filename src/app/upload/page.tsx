@@ -210,16 +210,20 @@ export default function UploadPage() {
         <div className="flex items-center justify-center gap-1 mb-8 p-1 rounded-full border border-border w-fit mx-auto">
           <button
             onClick={() => setTab("file")}
+            role="tab"
+            aria-selected={tab === "file"}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
-            style={tab === "file" ? { background: "#ffffff", color: "#000000" } : { color: "#888" }}
+            style={tab === "file" ? { background: "#ffffff", color: "#000000" } : { color: "#999" }}
           >
             <Upload className="w-3.5 h-3.5" />
             File
           </button>
           <button
             onClick={() => setTab("url")}
+            role="tab"
+            aria-selected={tab === "url"}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
-            style={tab === "url" ? { background: "#ffffff", color: "#000000" } : { color: "#888" }}
+            style={tab === "url" ? { background: "#ffffff", color: "#000000" } : { color: "#999" }}
           >
             <LinkIcon className="w-3.5 h-3.5" />
             URL

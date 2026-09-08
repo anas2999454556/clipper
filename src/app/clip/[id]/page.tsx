@@ -152,6 +152,7 @@ export default function ClipPage() {
 
             <button
               onClick={togglePlay}
+              aria-label={playing ? "Pause video" : "Play video"}
               className="absolute inset-0 flex items-center justify-center group/player cursor-pointer"
             >
               <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/player:opacity-100 transition-opacity duration-150">
