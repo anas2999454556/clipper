@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCookieConsent } from "@/components/CookieConsent";
 
 interface GoogleId {
   accounts: {
@@ -23,10 +22,9 @@ export default function GoogleButton() {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const { consent } = useCookieConsent();
 
   useEffect(() => {
-    if (!CLIENT_ID || consent !== true) return;
+    if (!CLIENT_ID) return;
 
     const windowWithGoogle = window as unknown as { google?: GoogleId };
 
@@ -79,7 +77,7 @@ export default function GoogleButton() {
     };
   }, [router]);
 
-  if (!CLIENT_ID || consent !== true) return null;
+  if (!CLIENT_ID) return null;
 
   return (
     <div>

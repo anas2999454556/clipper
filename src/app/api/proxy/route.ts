@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/server/api-helpers";
 
-// Block SSRF targets: loopback, private, link-local, multicast, and
-// cloud metadata ranges (169.254.169.254).
 function isBlockedTarget(host: string): boolean {
   const blocked =
     /^localhost$/i.test(host) ||

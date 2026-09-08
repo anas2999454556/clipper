@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
-import db from "@/server/db";
+import { getDb } from "@/server/db";
 import { applyPlan, syncStripePlan } from "@/server/api-helpers";
 import { getStripe, planFromPrice } from "@/server/stripe";
 import type { PlanId } from "@/lib/plans";
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const db = getDb();
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         if (!userId || !plan || (plan !== "premium" && plan !== "super_premium")) break;
         if (session.payment_status === "unpaid") break;
 
-        applyPlan(userId, plan, {
+        await applyPlan(userId, plan, {
           stripeCustomerId: typeof session.customer === "string" ? session.customer : session.customer?.id,
           stripeSubscriptionId: typeof session.subscription === "string" ? session.subscription : undefined,
         });
@@ -52,9 +53,10 @@ export async function POST(request: NextRequest) {
       case "customer.subscription.deleted": {
         const subscription = event.data.object;
         const customerId = subscription.customer as string;
-        const user = db
+        const user = await db
           .prepare("SELECT id, stripe_subscription_id FROM users WHERE stripe_customer_id = ?")
-          .get(customerId) as { id: string; stripe_subscription_id: string | null } | undefined;
+          .bind(customerId)
+          .first<{ id: string; stripe_subscription_id: string | null }>();
         if (!user) break;
 
         const isActive = subscription.status === "active" || subscription.status === "trialing";
@@ -63,9 +65,9 @@ export async function POST(request: NextRequest) {
         const isCurrentSubscription = user.stripe_subscription_id === subscription.id;
 
         if (plan) {
-          syncStripePlan(user.id, plan, { stripeCustomerId: customerId, stripeSubscriptionId: subscription.id });
+          await syncStripePlan(user.id, plan, { stripeCustomerId: customerId, stripeSubscriptionId: subscription.id });
         } else if (event.type === "customer.subscription.deleted" && isCurrentSubscription) {
-          applyPlan(user.id, "free");
+          await applyPlan(user.id, "free");
         }
         break;
       }

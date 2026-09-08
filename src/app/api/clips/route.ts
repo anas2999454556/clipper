@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
-import db from "@/server/db";
+import { getDb, type DBVideo } from "@/server/db";
 import { requireAuth } from "@/server/api-helpers";
-import type { DBVideo } from "@/server/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,13 +13,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const video = db.prepare("SELECT * FROM videos WHERE id = ? AND user_id = ?").get(videoId, auth.ctx.userId) as DBVideo | undefined;
+    const db = getDb();
+    const video = await db
+      .prepare("SELECT * FROM videos WHERE id = ? AND user_id = ?")
+      .bind(videoId, auth.ctx.userId)
+      .first<DBVideo>();
     if (!video) return NextResponse.json({ error: "Video not found" }, { status: 404 });
-
-    const insert = db.prepare(
-      `INSERT INTO clips (id, title, start_time, end_time, duration, video_id)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    );
 
     const saved = clips
       .map((c: { startTime?: number; endTime?: number; title?: string }) => {
@@ -46,12 +44,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No valid clips provided" }, { status: 400 });
     }
 
-    const created = saved.map((c) => {
+    const created = [];
+    for (const c of saved) {
       const id = uuid();
       const duration = c.end - c.start;
-      insert.run(id, c.title, c.start, c.end, duration, videoId);
-      return { id, title: c.title, startTime: c.start, endTime: c.end, duration, videoUrl: video.video_url, thumbnail: "" };
-    });
+      await db
+        .prepare(
+          `INSERT INTO clips (id, title, start_time, end_time, duration, video_id)
+           VALUES (?, ?, ?, ?, ?, ?)`
+        )
+        .bind(id, c.title, c.start, c.end, duration, videoId)
+        .run();
+      created.push({ id, title: c.title, startTime: c.start, endTime: c.end, duration, videoUrl: video.video_url, thumbnail: "" });
+    }
 
     return NextResponse.json({ success: true, clips: created });
   } catch (error) {
@@ -68,15 +73,20 @@ export async function GET(request: NextRequest) {
     const videoId = new URL(request.url).searchParams.get("videoId");
     if (!videoId) return NextResponse.json({ error: "Missing videoId" }, { status: 400 });
 
-    const video = db.prepare("SELECT * FROM videos WHERE id = ? AND user_id = ?").get(videoId, auth.ctx.userId) as DBVideo | undefined;
+    const db = getDb();
+    const video = await db
+      .prepare("SELECT * FROM videos WHERE id = ? AND user_id = ?")
+      .bind(videoId, auth.ctx.userId)
+      .first<DBVideo>();
     if (!video) return NextResponse.json({ error: "Video not found" }, { status: 404 });
 
-    const clips = db.prepare("SELECT * FROM clips WHERE video_id = ? ORDER BY start_time").all(videoId) as {
-      id: string; title: string; start_time: number; end_time: number; duration: number; thumbnail: string;
-    }[];
+    const clipsResult = await db
+      .prepare("SELECT * FROM clips WHERE video_id = ? ORDER BY start_time")
+      .bind(videoId)
+      .all<{ id: string; title: string; start_time: number; end_time: number; duration: number; thumbnail: string }>();
 
     return NextResponse.json({
-      clips: clips.map((c) => ({
+      clips: clipsResult.results.map((c) => ({
         id: c.id,
         title: c.title,
         startTime: c.start_time,

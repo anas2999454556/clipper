@@ -1,29 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
 import { v4 as uuid } from "uuid";
-import db from "@/server/db";
+import { getDb } from "@/server/db";
 import { requireAuth, checkUsage, incrementUsage } from "@/server/api-helpers";
 
-const DATA_DIR = path.join(process.cwd(), "data", "uploads");
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
 const ALLOWED_EXTENSIONS = new Set(["mp4", "webm", "mov"]);
 const MAGIC_BYTES: Record<string, string[]> = {
-  mp4: ["66747970", "00000018", "00000020", "6D6F6F76"], // ftyp / moov
+  mp4: ["66747970", "00000018", "00000020", "6D6F6F76"],
   webm: ["1A45DFA3"],
   mov: ["66747970", "6D6F6F76"],
 };
 
-function hasValidMagic(ext: string, buffer: Buffer): boolean {
+function hasValidMagic(ext: string, buffer: Uint8Array): boolean {
   const sigs = MAGIC_BYTES[ext];
   if (!sigs) return false;
-  const head = buffer.subarray(0, 16).toString("hex");
+  const head = Array.from(buffer.slice(0, 16))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
   return sigs.some((sig) => head.startsWith(sig));
-}
-
-async function ensureDirs() {
-  if (!existsSync(DATA_DIR)) await mkdir(DATA_DIR, { recursive: true });
 }
 
 export async function POST(request: NextRequest) {
@@ -31,10 +25,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireAuth();
     if (!auth.ok) return auth.response;
 
-    const usage = checkUsage(auth.ctx.user);
+    const usage = await checkUsage(auth.ctx.user);
     if (!usage.allowed) return usage.response!;
 
-    await ensureDirs();
     const formData = await request.formData();
     const file = formData.get("video") as File | null;
     const duration = parseFloat(formData.get("duration") as string) || 0;
@@ -50,24 +43,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Only MP4, WebM, and MOV files are allowed" }, { status: 415 });
     }
 
-    const bytes = Buffer.from(await file.arrayBuffer());
+    const bytes = new Uint8Array(await file.arrayBuffer());
     if (!hasValidMagic(ext, bytes)) {
       return NextResponse.json({ error: "File is not a valid video" }, { status: 415 });
     }
 
     const id = uuid();
     const fileName = `${id}.${ext}`;
-
-    await writeFile(path.join(DATA_DIR, fileName), bytes);
-
     const videoUrl = `/api/video/${fileName}`;
 
-    db.prepare(
-      `INSERT INTO videos (id, name, file_name, duration, size, source, video_url, user_id)
-       VALUES (?, ?, ?, ?, ?, 'upload', ?, ?)`
-    ).run(id, file.name, fileName, duration, file.size, videoUrl, auth.ctx.userId);
+    const db = getDb();
+    await db
+      .prepare(
+        `INSERT INTO videos (id, name, file_name, duration, size, source, video_url, user_id)
+         VALUES (?, ?, ?, ?, ?, 'upload', ?, ?)`
+      )
+      .bind(id, file.name, fileName, duration, file.size, videoUrl, auth.ctx.userId)
+      .run();
 
-    incrementUsage(auth.ctx.userId);
+    await incrementUsage(auth.ctx.userId);
 
     return NextResponse.json({
       success: true,

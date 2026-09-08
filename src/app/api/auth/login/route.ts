@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/server/db";
+import { getDb, type DBUser } from "@/server/db";
 import { verifyPassword, signToken, setAuthCookie } from "@/server/auth";
 import { checkRateLimit, resetRateLimit, clientIp } from "@/server/rate-limit";
-import type { DBUser } from "@/server/db";
 
 export async function POST(request: NextRequest) {
   try {
     const ip = clientIp(request);
-    const ipLimit = checkRateLimit(`login:ip:${ip}`);
+    const ipLimit = await checkRateLimit(`login:ip:${ip}`);
     if (!ipLimit.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Try again later." },
@@ -26,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase();
-    const emailLimit = checkRateLimit(`login:email:${normalizedEmail}`);
+    const emailLimit = await checkRateLimit(`login:email:${normalizedEmail}`);
     if (!emailLimit.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Try again later." },
@@ -34,7 +33,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(normalizedEmail) as DBUser | undefined;
+    const db = getDb();
+    const user = await db
+      .prepare("SELECT * FROM users WHERE email = ?")
+      .bind(normalizedEmail)
+      .first<DBUser>();
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
@@ -44,8 +47,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    resetRateLimit(`login:email:${normalizedEmail}`);
-    const token = signToken({ userId: user.id, email: user.email });
+    await resetRateLimit(`login:email:${normalizedEmail}`);
+    const token = await signToken({ userId: user.id, email: user.email });
     await setAuthCookie(token);
 
     return NextResponse.json({

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/server/db";
+import { getDb } from "@/server/db";
 import { hashPassword, signToken, setAuthCookie } from "@/server/auth";
 import { checkRateLimit, clientIp } from "@/server/rate-limit";
 import { v4 as uuid } from "uuid";
@@ -7,7 +7,7 @@ import { v4 as uuid } from "uuid";
 export async function POST(request: NextRequest) {
   try {
     const ip = clientIp(request);
-    const ipLimit = checkRateLimit(`signup:ip:${ip}`);
+    const ipLimit = await checkRateLimit(`signup:ip:${ip}`);
     if (!ipLimit.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Try again later." },
@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
 
     const { email, password, name, website } = await request.json();
 
-    // Honeypot: real users never see this field. A filled value means a bot.
     if (website) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
@@ -39,8 +38,9 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase();
+    const db = getDb();
 
-    const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(normalizedEmail);
+    const existing = await db.prepare("SELECT id FROM users WHERE email = ?").bind(normalizedEmail).first();
     if (existing) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
@@ -48,11 +48,14 @@ export async function POST(request: NextRequest) {
     const id = uuid();
     const hashedPassword = await hashPassword(password);
 
-    db.prepare(
-      "INSERT INTO users (id, email, password, name, plan, usage_count, usage_limit) VALUES (?, ?, ?, ?, 'free', 0, 5)"
-    ).run(id, normalizedEmail, hashedPassword, name || null);
+    await db
+      .prepare(
+        "INSERT INTO users (id, email, password, name, plan, usage_count, usage_limit) VALUES (?, ?, ?, ?, 'free', 0, 5)"
+      )
+      .bind(id, normalizedEmail, hashedPassword, name || null)
+      .run();
 
-    const token = signToken({ userId: id, email: normalizedEmail });
+    const token = await signToken({ userId: id, email: normalizedEmail });
     await setAuthCookie(token);
 
     return NextResponse.json({

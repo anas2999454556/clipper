@@ -1,43 +1,42 @@
+import { getDb, type D1Database } from "@/server/db";
+
 const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_ATTEMPTS = 5;
 
-interface Bucket {
-  count: number;
-  resetAt: number;
-}
-
-const buckets = new Map<string, Bucket>();
-
-function prune() {
+export async function checkRateLimit(
+  key: string,
+  db?: D1Database
+): Promise<{ allowed: boolean; retryAfterSec?: number }> {
+  const d = db ?? getDb();
   const now = Date.now();
-  for (const [key, bucket] of buckets) {
-    if (now > bucket.resetAt) buckets.delete(key);
-  }
-}
 
-export function checkRateLimit(key: string): {
-  allowed: boolean;
-  retryAfterSec?: number;
-} {
-  prune();
-  const now = Date.now();
-  const bucket = buckets.get(key);
+  const row = await d
+    .prepare("SELECT count, reset_at FROM rate_limits WHERE key = ?")
+    .bind(key)
+    .first<{ count: number; reset_at: number }>();
 
-  if (!bucket || now > bucket.resetAt) {
-    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
+  if (!row || now > row.reset_at) {
+    await d
+      .prepare("INSERT OR REPLACE INTO rate_limits (key, count, reset_at) VALUES (?, 1, ?)")
+      .bind(key, now + WINDOW_MS)
+      .run();
     return { allowed: true };
   }
 
-  if (bucket.count >= MAX_ATTEMPTS) {
-    return { allowed: false, retryAfterSec: Math.ceil((bucket.resetAt - now) / 1000) };
+  if (row.count >= MAX_ATTEMPTS) {
+    return { allowed: false, retryAfterSec: Math.ceil((row.reset_at - now) / 1000) };
   }
 
-  bucket.count += 1;
+  await d
+    .prepare("UPDATE rate_limits SET count = count + 1 WHERE key = ?")
+    .bind(key)
+    .run();
   return { allowed: true };
 }
 
-export function resetRateLimit(key: string) {
-  buckets.delete(key);
+export async function resetRateLimit(key: string, db?: D1Database) {
+  const d = db ?? getDb();
+  await d.prepare("DELETE FROM rate_limits WHERE key = ?").bind(key).run();
 }
 
 export function clientIp(request: Request): string {

@@ -1,0 +1,9 @@
+name = "clipper"
+compatibility_date = "2024-09-25"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clipper-db"
+database_id = "placeholder-replace-with-your-d1-id"

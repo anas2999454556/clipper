@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/server/db";
+import { getDb } from "@/server/db";
 import { requireAuth } from "@/server/api-helpers";
 import { getStripe, getPriceId, appUrl, findOrCreateCustomer } from "@/server/stripe";
 import { PLAN_MAP } from "@/lib/plans";
@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (auth.ctx.user.stripe_customer_id !== customerId) {
-      db.prepare("UPDATE users SET stripe_customer_id = ? WHERE id = ?").run(customerId, auth.ctx.user.id);
+      const db = getDb();
+      await db.prepare("UPDATE users SET stripe_customer_id = ? WHERE id = ?").bind(customerId, auth.ctx.user.id).run();
     }
 
     const session = await getStripe().checkout.sessions.create({

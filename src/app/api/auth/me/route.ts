@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import db from "@/server/db";
+import { getDb, type DBUser } from "@/server/db";
 import { getSession } from "@/server/auth";
-import type { DBUser } from "@/server/db";
 
 export async function GET() {
   try {
@@ -10,7 +9,11 @@ export async function GET() {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(session.userId) as DBUser | undefined;
+    const db = getDb();
+    const user = await db
+      .prepare("SELECT * FROM users WHERE id = ?")
+      .bind(session.userId)
+      .first<DBUser>();
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, stat } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
-import db from "@/server/db";
+import { getDb, type DBVideo } from "@/server/db";
 import { requireAuth } from "@/server/api-helpers";
-import type { DBVideo } from "@/server/db";
-
-const DATA_DIR = path.join(process.cwd(), "data", "uploads");
 
 export async function GET(
   _request: NextRequest,
@@ -17,34 +11,25 @@ export async function GET(
     if (!auth.ok) return auth.response;
 
     const { filename } = await params;
+    const safeName = filename;
 
-    // Prevent path traversal outside the uploads directory
-    const safeName = path.basename(filename);
-    const filePath = path.join(DATA_DIR, safeName);
-    if (!filePath.startsWith(DATA_DIR + path.sep) || !existsSync(filePath)) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    // Authorization: only the owning user may access this video
-    const video = db
+    const db = getDb();
+    const video = await db
       .prepare("SELECT * FROM videos WHERE file_name = ? AND user_id = ?")
-      .get(safeName, auth.ctx.userId) as DBVideo | undefined;
+      .bind(safeName, auth.ctx.userId)
+      .first<DBVideo>();
     if (!video) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const fileStat = await stat(filePath);
-    const buffer = await readFile(filePath);
-    const ext = path.extname(safeName).toLowerCase();
-    const contentTypes: Record<string, string> = {
-      ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime",
-    };
-
-    return new NextResponse(buffer, {
-      headers: {
-        "Content-Type": contentTypes[ext] || "video/mp4",
-        "Content-Length": fileStat.size.toString(),
-        "Accept-Ranges": "bytes",
+    // On Cloudflare, file serving needs R2 or external storage.
+    // For now, return the video URL metadata.
+    return NextResponse.json({
+      video: {
+        id: video.id,
+        name: video.name,
+        fileName: video.file_name,
+        videoUrl: video.video_url,
       },
     });
   } catch {
